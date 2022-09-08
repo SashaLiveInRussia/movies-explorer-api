@@ -3,14 +3,14 @@ const NotFoundError = require('../errors/NotFoundError');
 const Movie = require('../models/movie');
 
 const getMovies = (req, res, next) => {
-  Movie.find({ owner: req.user._id })
-    .then((movie) => res.status(200).send(movie))
+  Movie.find({ owner: req.user.id })
+    .then((movie) => res.send(movie))
     .catch(next);
 }; // возвращает все сохранённые текущим  пользователем фильмы
 
 const createMovie = (req, res, next) => {
   const movieData = req.body;
-  const { _id: owner } = req.user;
+  const { id: owner } = req.user;
 
   Movie.create({ ...movieData, owner })
     .then((movie) => res.send({ data: movie }))
@@ -19,6 +19,7 @@ const createMovie = (req, res, next) => {
 
 const deleteMovie = (req, res, next) => {
   Movie.findById({ _id: req.params.movieId })
+    .select('+owner')
     .orFail(() => next(new NotFoundError('Карточка с указанным id не найдена')))
     .then((movie) => {
       if (!movie.owner.equals(req.user.id)) {

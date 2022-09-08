@@ -5,6 +5,7 @@ const userRouter = require('./users');
 const movieRouter = require('./movies');
 const { createUser, loginUser } = require('../controllers/users');
 const { isAutorised } = require('../middlewares/auth');
+const NotFoundError = require('../errors/NotFoundError');
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -24,5 +25,9 @@ router.post('/signup', celebrate({
 router.use(isAutorised);
 router.use('/users', userRouter);
 router.use('/movies', movieRouter);
+
+router.use((req, res, next) => {
+  next(new NotFoundError('Маршрут не найден'));
+});
 
 module.exports = router;

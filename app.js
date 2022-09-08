@@ -3,20 +3,24 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const { errors } = require('celebrate');
 const router = require('./routes');
-const NotFoundError = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const errorHandler = require('./error-handler');
 require('dotenv').config();
 
 const app = express();
 const { PORT = 2022 } = process.env;
+
+if (process.env.NODE_ENV !== 'production') {
+  process.env.DATABASE = 'mongodb://localhost:27017/moviesbd';
+} else if (!process.env.DATABASE) {
+  throw new Error('Не указана база данных');
+}
 
 // Массив доменов, с которых разрешены кросс-доменные запросы
 const allowedCors = [
   'https://praktikum.tk',
   'http://praktikum.tk',
   'http://localhost:3000',
-  'http://sasha.nomoredomains.sbs',
-  'https://sasha.nomoredomains.sbs',
 ];
 
 app.use((req, res, next) => {
@@ -43,38 +47,19 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
-
 app.use(requestLogger); // подключаем логгер запросов
 app.use(bodyParser.json());
 app.use(router);
 
-mongoose.connect('mongodb://localhost:27017/moviesbd', {
+mongoose.connect(process.env.DATABASE, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
-
-app.use((req, res, next) => {
-  next(new NotFoundError('Маршрут не найден'));
 });
 
 app.use(errorLogger);
 app.use(errors());
 
-app.use((err, req, res, next) => {
-  if (err.name === 'ValidationError') {
-    return res.status(400).send({ message: 'Переданы некорректные данные' }); // Добавлено здесь потому что дублируется везде
-  }
-
-  const statusCode = err.statusCode || 500;
-  const message = statusCode === 500 ? 'На сервере произошла ошибка' : err.message;
-  res.status(statusCode).send({ message });
-  return next();
-});
+app.use(errorHandler);
 
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => { });

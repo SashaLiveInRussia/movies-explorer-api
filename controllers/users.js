@@ -8,11 +8,14 @@ const AuthError = require('../errors/AuthError');
 const ConflictError = require('../errors/ConflictError');
 
 const getUserInfo = (req, res, next) => {
-  const { email, name } = req.user;
+  const { id } = req.user;
 
-  User.findBy(email, name)
+  User.findById(id)
     .orFail(() => next(new NotFoundError('Пользователь по указанному id не найден')))
-    .then((user) => res.send(user))
+    .then((user) => res.send({
+      email: user.email,
+      name: user.name,
+    }))
     .catch(next);
 }; // возвращает информацию о пользователе
 
@@ -27,14 +30,20 @@ const updateUser = (req, res, next) => {
   )
     .orFail(() => next(new NotFoundError('Пользователь не найден')))
     .then((user) => res.status(200).send(user))
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        return next(new ConflictError('Такая запись уже существует'));
+      }
+
+      return next(err);
+    });
 }; //  обновляет информацию о пользователе
 
 const loginUser = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findOne({ email }).select('+password')
-    .orFail(() => next(new AuthError('Такого пользователя не существует')))
+    .orFail(() => next(new AuthError('Неправильная почта или пароль')))
     .then((user) => bcrypt.compare(password, user.password, (err, isValidPassword) => {
       if (!isValidPassword) {
         return next(new AuthError('Неправильный email или пароль'));
