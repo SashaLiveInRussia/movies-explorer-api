@@ -22,9 +22,8 @@ router.post('/signup', celebrate({
   }),
 }), createUser);
 
-router.use(isAutorised);
-router.use('/users', userRouter);
-router.use('/movies', movieRouter);
+router.use('/users', isAutorised, userRouter);
+router.use('/movies', isAutorised, movieRouter);
 
 router.use((req, res, next) => {
   next(new NotFoundError('Маршрут не найден'));
