@@ -50,7 +50,7 @@ const loginUser = (req, res, next) => {
       }
 
       const token = getJwtToken(user.id);
-      return res.status(200).send({ token });
+      return res.status(200).send({ token, email: user.email, name: user.name });
     }))
     .catch(next);
 };
