@@ -18,8 +18,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Массив доменов, с которых разрешены кросс-доменные запросы
 const allowedCors = [
-  'https://praktikum.tk',
-  'http://praktikum.tk',
+  'https://front-kinomovie.nomorepartiesxyz.ru',
+  'http://front-kinomovie.nomorepartiesxyz.ru',
   'http://localhost:3000',
 ];
 
