@@ -60,7 +60,7 @@ const createUser = (req, res, next) => {
 
   return bcrypt.hash(password, 10).then((hash) => User.create({ ...req.body, password: hash })
     .then((userData) => {
-      const token = getJwtToken(user.id);
+      const token = getJwtToken(userData.id);
       res.status(201).json({ token, email: userData.email, name: userData.name });
     }))
     .catch((err) => {
