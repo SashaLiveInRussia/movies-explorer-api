@@ -60,9 +60,8 @@ const createUser = (req, res, next) => {
 
   return bcrypt.hash(password, 10).then((hash) => User.create({ ...req.body, password: hash })
     .then((userData) => {
-      const userJson = userData.toJSON();
-      delete userJson.password;
-      res.status(201).json(userJson);
+      const token = getJwtToken(user.id);
+      res.status(201).json({ token, email: userData.email, name: userData.name });
     }))
     .catch((err) => {
       if (err.code === 11000) {
