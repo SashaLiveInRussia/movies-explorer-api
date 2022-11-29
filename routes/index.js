@@ -3,7 +3,7 @@ const { celebrate, Joi } = require('celebrate');
 
 const userRouter = require('./users');
 const movieRouter = require('./movies');
-const { createUser, loginUser } = require('../controllers/users');
+const { createUser, loginUser, signout } = require('../controllers/users');
 const { isAutorised } = require('../middlewares/auth');
 const NotFoundError = require('../errors/NotFoundError');
 
@@ -21,6 +21,8 @@ router.post('/signup', celebrate({
     password: Joi.string().min(8).required().strict(),
   }),
 }), createUser);
+
+router.get('/signout', signout);
 
 router.use('/users', isAutorised, userRouter);
 router.use('/movies', isAutorised, movieRouter);

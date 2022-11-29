@@ -72,9 +72,16 @@ const createUser = (req, res, next) => {
     });
 }; // создает пользователя
 
+
+
+const signout = (req, res) => (
+  res.clearCookie('jwt', { httpOnly: true, sameSite: true }).send({ message: 'Успешный выход' })
+);
+
 module.exports = {
   getUserInfo,
   createUser,
   updateUser,
   loginUser,
+  signout
 };
